@@ -1,11 +1,15 @@
 
-# School Website Mapper
+# School Website & Email Mapper
 
-Upload the SA schools EMIS CSV, filter by province/district, and automatically map each school to its likely website using DuckDuckGo.
+Upload an EMIS Excel/CSV of South African schools → the app finds likely official websites and contact emails.
 
-## Usage
-* Columns required in CSV: **Province**, **District**, **School Name**
-* Optional Hunter.io key for email enrichment.
+## Columns required
+* `Province`, `District`, `School Name`
 
-### Why a CSV?
-Using the official registry guarantees every entry is a real school; we only need to find its web domain.
+## Quick run
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+Optional: set `HUNTER_API_KEY` as an environment variable or paste it in the UI for extra email enrichment.

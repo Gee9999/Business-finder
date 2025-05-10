@@ -1,68 +1,52 @@
 
-import streamlit as st, pandas as pd, asyncio, io, os
-from mapper import find_school_websites
+import streamlit as st, pandas as pd, io, asyncio
+from mapper import map_school
 
-st.set_page_config(page_title="School Mapper", layout="wide")
-st.title("🏫 School Website Mapper – Official Registry Edition")
+st.set_page_config(page_title="School Website Mapper", layout="wide")
+st.title("🏫 School Website & Email Mapper")
 
-st.markdown("""Upload the **official South African schools CSV** (EMIS list).  
-The app will attempt to find each school's official website automatically.
+st.markdown("""Upload the SA EMIS schools list (Excel or CSV), and I'll try to find each school's official website and scrape contact e‑mails automatically.""")
 
-*Steps*  
-1. Upload CSV.  
-2. Select provinces / districts if you want a subset.  
-3. Click **Map websites** – the app searches DuckDuckGo for each school, filters out directories, and returns likely websites + e‑mails.  
-4. Download the Excel output.
-""")
+file = st.file_uploader("📄 Upload EMIS XLSX / CSV", type=["xlsx", "csv"])
+hunter_key = st.text_input("Hunter.io API key (optional)", type="password")
+max_sites = st.slider("Max websites to scan per school", 1, 5, 2)
 
-uploaded = st.file_uploader("📄 Upload school list CSV", type=["csv"])
-if uploaded:
-    schools_df = pd.read_csv(uploaded, encoding="utf-8", on_bad_lines="skip")
-
-    # Guess column names (adjust if needed)
-    cols = [c.lower() for c in schools_df.columns]
-    if "province" in cols and "district" in cols and "school name" in cols:
-        schools_df.columns = cols
+if file:
+    if file.name.endswith(".csv"):
+        df = pd.read_csv(file, encoding="utf-8", on_bad_lines="skip")
     else:
-        st.error("CSV must contain columns: 'Province', 'District', 'School Name'")
+        df = pd.read_excel(file, engine="openpyxl")
+    df.columns = [c.lower() for c in df.columns]
+    required = {"province", "district", "school name"}
+    if not required.issubset(df.columns):
+        st.error(f"CSV/XLSX must contain columns: {', '.join(required)}")
         st.stop()
+    st.write(f"Loaded {len(df)} rows.")
 
-    provinces = st.multiselect("Province filter (blank = all)", options=sorted(schools_df["province"].unique()))
-    if provinces:
-        schools_df = schools_df[schools_df["province"].isin(provinces)]
-
-    districts = st.multiselect("District filter (blank = all)", options=sorted(schools_df["district"].unique()))
-    if districts:
-        schools_df = schools_df[schools_df["district"].isin(districts)]
-
-    st.write(f"**{len(schools_df)} schools selected**")
-    max_per_school = st.slider("Max websites to scan per school", 1, 5, 2)
-    hunter_key = st.text_input("Hunter.io API key (optional email enrichment)", type="password")
-
-    if st.button("🔎 Map websites"):
+    if st.button("🔎 Map websites & emails"):
         progress = st.progress(0)
         status = st.empty()
+        results = []
 
         async def runner():
-            leads = []
-            for idx, row in schools_df.iterrows():
-                status.info(f"Searching {row['school name']} …")
-                result = await find_school_websites(row['school name'], max_per_school, hunter_key)
-                result.update({
+            for idx, row in df.iterrows():
+                status.info(f"Searching {row['school name']} ({idx+1}/{len(df)})")
+                mapped = await map_school(row['school name'], hunter_key, max_sites)
+                mapped.update({
                     "province": row['province'],
                     "district": row['district'],
                     "school name": row['school name']
                 })
-                leads.append(result)
-                progress.progress((idx + 1) / len(schools_df))
-            return leads
+                results.append(mapped)
+                progress.progress((idx + 1) / len(df))
+            return results
 
-        mapped = asyncio.new_event_loop().run_until_complete(runner())
-        df = pd.DataFrame(mapped)
-        st.success(f"Completed – {df['website'].astype(bool).sum()} websites found.")
-        st.dataframe(df, use_container_width=True)
+        asyncio.new_event_loop().run_until_complete(runner())
+        resdf = pd.DataFrame(results)
+        st.success(f"Found websites for {resdf['website'].astype(bool).sum()} of {len(resdf)} schools.")
+        st.dataframe(resdf, use_container_width=True)
 
         buf = io.BytesIO()
         with pd.ExcelWriter(buf, engine="openpyxl") as writer:
-            df.to_excel(writer, index=False, sheet_name="Websites")
+            resdf.to_excel(writer, index=False, sheet_name="Websites")
         st.download_button("⬇️ Download Excel", buf.getvalue(), file_name="school_websites.xlsx")

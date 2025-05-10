@@ -1,7 +1,7 @@
 
 streamlit>=1.45.0
 pandas
-requests
-aiohttp
 duckduckgo-search==8.0.1
+aiohttp
+requests
 openpyxl
