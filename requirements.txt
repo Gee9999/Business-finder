@@ -1,7 +1,6 @@
-
 streamlit>=1.45.0
 pandas
-duckduckgo-search==8.0.1
 aiohttp
 requests
 openpyxl
+google-api-python-client==2.129.0

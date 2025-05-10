@@ -1,15 +1,20 @@
+# School Website Mapper – Google 100‑free‑search Edition
 
-# School Website & Email Mapper
+Uses Google Programmable Search (Custom Search JSON API) to find official school websites.
 
-Upload an EMIS Excel/CSV of South African schools → the app finds likely official websites and contact emails.
+## Setup
+Add two secrets (or environment variables):
 
-## Columns required
-* `Province`, `District`, `School Name`
+```
+GOOGLE_API_KEY = "your_api_key"
+GOOGLE_CX = "your_search_engine_id"
+```
 
-## Quick run
+Optional: `HUNTER_API_KEY` for extra email enrichment.
+
+Run:
+
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
-
-Optional: set `HUNTER_API_KEY` as an environment variable or paste it in the UI for extra email enrichment.
