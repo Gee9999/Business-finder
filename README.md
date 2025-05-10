@@ -1,11 +1,8 @@
 
-# Business Finder – School‑Focused Edition
+# Business Finder – School Wide Filter Edition
 
-* Filters DuckDuckGo results to reduce directories:  
-  - Adds negative keywords (`-directory -listing -yellowpages`).  
-  - Keeps only domains ending with `.edu.za` or `.school.za`.  
-* Async scraping for speed.  
-* Optional Hunter.io enrichment.
+Filters logic:  
+1. Negative keywords: directory, listing, yellowpages removed.  
+2. Keeps if domain ends with ALLOWED_SUFFIXES **or** (if strict unchecked) domain contains 'school'.
 
-## Adjust filters
-* Edit `NEGATIVE_TERMS` or `SCHOOL_SUFFIXES` in `scraper.py` to suit other institution types or countries.
+Edit `ALLOWED_SUFFIXES` or toggle the strict checkbox for flexibility.
