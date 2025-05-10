@@ -1,8 +1,11 @@
 
-# Business Finder – School Wide Filter Edition
+# School Website Mapper
 
-Filters logic:  
-1. Negative keywords: directory, listing, yellowpages removed.  
-2. Keeps if domain ends with ALLOWED_SUFFIXES **or** (if strict unchecked) domain contains 'school'.
+Upload the SA schools EMIS CSV, filter by province/district, and automatically map each school to its likely website using DuckDuckGo.
 
-Edit `ALLOWED_SUFFIXES` or toggle the strict checkbox for flexibility.
+## Usage
+* Columns required in CSV: **Province**, **District**, **School Name**
+* Optional Hunter.io key for email enrichment.
+
+### Why a CSV?
+Using the official registry guarantees every entry is a real school; we only need to find its web domain.
