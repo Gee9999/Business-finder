@@ -3,6 +3,9 @@ import asyncio, aiohttp, re
 from duckduckgo_search import DDGS
 import requests
 
+NEGATIVE_TERMS = "-directory -directories -listing -yellowpages"
+SCHOOL_SUFFIXES = (".edu.za", ".school.za")
+
 EMAIL_REGEX = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 HEADERS = {"User-Agent": "Mozilla/5.0 DuckDuckBot"}
 CONCURRENT = 15
@@ -11,9 +14,13 @@ def extract_emails(text: str):
     return EMAIL_REGEX.findall(text)
 
 def ddg_search(query: str, max_results: int = 10):
+    full_query = f"{query} {NEGATIVE_TERMS}"
     with DDGS() as ddgs:
-        return [r["href"] for r in ddgs.text(query, max_results=max_results)
-                if r.get("href", "").startswith("http")]
+        raw = ddgs.text(full_query, max_results=max_results)
+        links = [r["href"] for r in raw if r.get("href", "").startswith("http")]
+    # keep only likely school domains
+    filtered = [u for u in links if u.split("/")[2].endswith(SCHOOL_SUFFIXES)]
+    return filtered
 
 async def fetch_site(session: aiohttp.ClientSession, url: str, max_bytes: int = 120_000):
     try:

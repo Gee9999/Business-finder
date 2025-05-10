@@ -1,17 +1,11 @@
 
-# Business Finder – DuckDuckGo Edition
+# Business Finder – School‑Focused Edition
 
-* Unlimited free searches via DuckDuckGo (`duckduckgo-search` lib).  
-* Asynchronous scraping for speed.  
+* Filters DuckDuckGo results to reduce directories:  
+  - Adds negative keywords (`-directory -listing -yellowpages`).  
+  - Keeps only domains ending with `.edu.za` or `.school.za`.  
+* Async scraping for speed.  
 * Optional Hunter.io enrichment.
 
-## Local run
-```bash
-pip install -r requirements.txt
-streamlit run app.py
-```
-
-## Deploy on Streamlit Cloud
-1. Put **these four files** in repo root (`app.py`, `scraper.py`, `requirements.txt`, `README.md`).
-2. No mandatory secrets. Add `HUNTER_API_KEY` if you want enrichment.
-3. Main file path: `app.py` → Deploy.
+## Adjust filters
+* Edit `NEGATIVE_TERMS` or `SCHOOL_SUFFIXES` in `scraper.py` to suit other institution types or countries.
